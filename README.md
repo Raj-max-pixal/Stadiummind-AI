@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # STADIUMMIND AI
 
 > **The AI Brain Behind Every Stadium**
@@ -337,3 +338,6 @@ Built by solo developer for FIFA World Cup 2026 GenAI Hackathon
 - Flutter for cross-platform frontend
 - FastAPI for high-performance backend
 - Render for free-tier hosting
+=======
+# Stadiummind-AI
+>>>>>>> 61943654b50804d458beb8d16d21400fe6f06430
