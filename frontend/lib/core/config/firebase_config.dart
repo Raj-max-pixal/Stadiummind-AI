@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 class FirebaseConfig {
@@ -8,7 +7,7 @@ class FirebaseConfig {
       // await Firebase.initializeApp(
       //   options: DefaultFirebaseOptions.currentPlatform,
       // );
-      
+
       if (kDebugMode) {
         print('Firebase initialized (mock mode)');
       }

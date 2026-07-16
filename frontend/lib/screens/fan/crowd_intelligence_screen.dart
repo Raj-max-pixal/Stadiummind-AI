@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/theme/color_palette.dart';
 import '../../providers/crowd_provider.dart';
 import '../../providers/assistant_provider.dart';
 import '../../widgets/charts/crowd_chart.dart';
@@ -28,6 +29,7 @@ class _CrowdIntelligenceScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final crowdData = ref.watch(crowdProvider);
     final assistantState = ref.watch(assistantProvider);
 
@@ -35,11 +37,18 @@ class _CrowdIntelligenceScreenState
       appBar: AppBar(
         title: const Text('Crowd Intelligence'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.read(crowdProvider.notifier).refresh();
-            },
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: () {
+                ref.read(crowdProvider.notifier).refresh();
+              },
+            ),
           ),
         ],
       ),
@@ -56,6 +65,14 @@ class _CrowdIntelligenceScreenState
                   children: [
                     // Overall Status Card
                     CustomCard(
+                      gradient: LinearGradient(
+                        colors: [
+                          _getStatusColor(crowdData.overallStatus)
+                              .withOpacity(0.15),
+                          _getStatusColor(crowdData.overallStatus)
+                              .withOpacity(0.05),
+                        ],
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -67,13 +84,18 @@ class _CrowdIntelligenceScreenState
                                 children: [
                                   Text(
                                     'Overall Status',
-                                    style: theme.textTheme.labelMedium,
+                                    style:
+                                        theme.textTheme.labelMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     crowdData.overallStatus,
-                                    style: theme.textTheme.headlineSmall?.copyWith(
-                                      color: _getStatusColor(crowdData.overallStatus),
+                                    style:
+                                        theme.textTheme.headlineSmall?.copyWith(
+                                      color: _getStatusColor(
+                                          crowdData.overallStatus),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -82,13 +104,27 @@ class _CrowdIntelligenceScreenState
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(crowdData.overallStatus)
-                                      .withOpacity(0.1),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      _getStatusColor(crowdData.overallStatus),
+                                      _getStatusColor(crowdData.overallStatus)
+                                          .withOpacity(0.7),
+                                    ],
+                                  ),
                                   shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _getStatusColor(
+                                              crowdData.overallStatus)
+                                          .withOpacity(0.3),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
                                 ),
                                 child: Icon(
                                   _getStatusIcon(crowdData.overallStatus),
-                                  color: _getStatusColor(crowdData.overallStatus),
+                                  color: Colors.white,
                                   size: 32,
                                 ),
                               ),
@@ -122,15 +158,20 @@ class _CrowdIntelligenceScreenState
                     // Live Crowd Chart
                     Text(
                       'Live Crowd Density',
-                      style: theme.textTheme.titleMedium,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     CustomCard(
+                      padding: const EdgeInsets.all(20),
                       child: SizedBox(
-                        height: 200,
+                        height: 220,
                         child: CrowdChart(
-                          data: crowdData.gates.map((g) => g.percentage).toList(),
-                          labels: crowdData.gates.map((g) => g.gateName).toList(),
+                          data:
+                              crowdData.gates.map((g) => g.percentage).toList(),
+                          labels:
+                              crowdData.gates.map((g) => g.gateName).toList(),
                         ),
                       ),
                     ),
@@ -139,7 +180,9 @@ class _CrowdIntelligenceScreenState
                     // Gate Status List
                     Text(
                       'Gate Status',
-                      style: theme.textTheme.titleMedium,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     ...crowdData.gates.map((gate) => _GateCard(gate: gate)),
@@ -149,28 +192,45 @@ class _CrowdIntelligenceScreenState
                     if (crowdData.aiInsight != null) ...[
                       Text(
                         'AI Insights',
-                        style: theme.textTheme.titleMedium,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       CustomCard(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withOpacity(0.1),
+                            AppColors.primary.withOpacity(0.05),
+                          ],
+                        ),
                         child: Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withOpacity(0.1),
+                                gradient: AppColors.primaryGradient,
                                 borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primary.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
-                              child: Icon(
+                              child: const Icon(
                                 Icons.lightbulb,
-                                color: theme.colorScheme.primary,
+                                color: Colors.white,
                               ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Text(
                                 crowdData.aiInsight!,
-                                style: theme.textTheme.bodySmall,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  height: 1.4,
+                                ),
                               ),
                             ),
                           ],
@@ -182,17 +242,35 @@ class _CrowdIntelligenceScreenState
                     // AI Recommendations
                     if (crowdData.aiRecommendation != null) ...[
                       CustomCard(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.orange.withOpacity(0.1),
+                            Colors.orange.withOpacity(0.05),
+                          ],
+                        ),
                         child: Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.orange.withOpacity(0.1),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.orange,
+                                    Colors.orange.shade300
+                                  ],
+                                ),
                                 borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.orange.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
                               child: const Icon(
                                 Icons.auto_awesome,
-                                color: Colors.orange,
+                                color: Colors.white,
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -209,7 +287,9 @@ class _CrowdIntelligenceScreenState
                                   const SizedBox(height: 4),
                                   Text(
                                     crowdData.aiRecommendation!,
-                                    style: theme.textTheme.bodySmall,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      height: 1.4,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -223,29 +303,53 @@ class _CrowdIntelligenceScreenState
                     // AI Prediction
                     Text(
                       'AI Crowd Prediction',
-                      style: theme.textTheme.titleMedium,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     CustomCard(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.secondary.withOpacity(0.1),
+                          AppColors.secondary.withOpacity(0.05),
+                        ],
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(
-                              labelText: 'Select Gate',
-                              border: InputBorder.none,
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.05)
+                                  : Colors.black.withOpacity(0.03),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.1)
+                                    : Colors.black.withOpacity(0.05),
+                                width: 1,
+                              ),
                             ),
-                            items: crowdData.gates
-                                .map((gate) => DropdownMenuItem(
-                                      value: gate.gateId,
-                                      child: Text(gate.gateName),
-                                    ))
-                                .toList(),
-                            onChanged: (value) {
-                              if (value != null) {
-                                _getPrediction(value);
-                              }
-                            },
+                            child: DropdownButtonFormField<String>(
+                              decoration: const InputDecoration(
+                                labelText: 'Select Gate',
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                              ),
+                              items: crowdData.gates
+                                  .map((gate) => DropdownMenuItem(
+                                        value: gate.gateId,
+                                        child: Text(gate.gateName),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  _getPrediction(value);
+                                }
+                              },
+                            ),
                           ),
                           const SizedBox(height: 16),
                           if (assistantState.isLoading)
@@ -254,7 +358,8 @@ class _CrowdIntelligenceScreenState
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainerHighest,
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -321,7 +426,7 @@ class _StatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       children: [
         Icon(icon, color: theme.colorScheme.primary, size: 24),
@@ -351,13 +456,13 @@ class _GateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final percentage = gate.percentage as double;
-    
+
     Color getColor() {
       if (percentage < 50) return Colors.green;
       if (percentage < 75) return Colors.orange;
       return Colors.red;
     }
-    
+
     return CustomCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,7 +475,8 @@ class _GateCard extends StatelessWidget {
                 style: theme.textTheme.titleMedium,
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: getColor().withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),

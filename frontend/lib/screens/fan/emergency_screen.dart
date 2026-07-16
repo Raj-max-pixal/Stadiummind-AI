@@ -23,11 +23,20 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
 
   void _handleEmergencyReport() {
     ref.read(emergencyProvider.notifier).reportEmergency(
-      type: _selectedType,
-      location: _selectedLocation,
-      description: _descriptionController.text,
-      reporterId: 'user_123',
+          type: _selectedType,
+          location: _selectedLocation,
+          description: _descriptionController.text,
+          reporterId: 'user_123',
+        );
+    FocusScope.of(context).unfocus();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            '$_selectedType reported at $_selectedLocation. Response team notified.'),
+        backgroundColor: Colors.red,
+      ),
     );
+    _descriptionController.clear();
   }
 
   @override
@@ -117,12 +126,14 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                 _EmergencyTypeChip(
                   label: 'Medical',
                   isSelected: _selectedType == 'Medical Emergency',
-                  onTap: () => setState(() => _selectedType = 'Medical Emergency'),
+                  onTap: () =>
+                      setState(() => _selectedType = 'Medical Emergency'),
                 ),
                 _EmergencyTypeChip(
                   label: 'Security',
                   isSelected: _selectedType == 'Security Incident',
-                  onTap: () => setState(() => _selectedType = 'Security Incident'),
+                  onTap: () =>
+                      setState(() => _selectedType = 'Security Incident'),
                 ),
                 _EmergencyTypeChip(
                   label: 'Fire',
@@ -132,7 +143,8 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                 _EmergencyTypeChip(
                   label: 'Fight',
                   isSelected: _selectedType == 'Fight/Altercation',
-                  onTap: () => setState(() => _selectedType = 'Fight/Altercation'),
+                  onTap: () =>
+                      setState(() => _selectedType = 'Fight/Altercation'),
                 ),
                 _EmergencyTypeChip(
                   label: 'Lost Child',
@@ -213,7 +225,10 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                 subtitle: const Text('Section 5 • 2 min away'),
                 trailing: IconButton(
                   icon: const Icon(Icons.directions),
-                  onPressed: () {},
+                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Route started to Medical Room.')),
+                  ),
                 ),
               ),
             ),
@@ -224,18 +239,25 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                 subtitle: const Text('Gate A • 1 min away'),
                 trailing: IconButton(
                   icon: const Icon(Icons.directions),
-                  onPressed: () {},
+                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Route started to Security at Gate A.')),
+                  ),
                 ),
               ),
             ),
             CustomCard(
               child: ListTile(
-                leading: const Icon(Icons.fire_extinguisher, color: Colors.orange),
+                leading:
+                    const Icon(Icons.fire_extinguisher, color: Colors.orange),
                 title: const Text('Fire Station'),
                 subtitle: const Text('Section 12 • 3 min away'),
                 trailing: IconButton(
                   icon: const Icon(Icons.directions),
-                  onPressed: () {},
+                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Route started to Fire Station.')),
+                  ),
                 ),
               ),
             ),

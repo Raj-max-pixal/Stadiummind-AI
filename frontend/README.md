@@ -130,3 +130,6 @@ BACKEND_URL=http://localhost:8000
 ## License
 
 MIT License
+## Latest UI and Feature Update - July 2026
+
+The frontend has been refreshed with animated dashboard tab switching, a stronger fan match-day home card, working quick-action bottom sheets, emergency report/contact feedback, volunteer alert responses, admin recommendation/report controls, and stateful admin settings. `flutter analyze` was rerun after the changes with no filtered errors or warnings.

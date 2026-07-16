@@ -219,3 +219,6 @@ A: The AI Decision Engine. It's not just answering questions - it's making auton
 - "Where's the AI?"
 - "This looks like a demo"
 - "Can it scale?"
+## Latest UI and Feature Update - July 2026
+
+Demo presenters can now tap the fan quick actions to show route/availability sheets, submit emergency reports for visible dispatch feedback, use volunteer alert buttons for navigation responses, and accept/administer AI recommendations from the admin dashboard. Dashboard tab changes now animate for a smoother walkthrough.

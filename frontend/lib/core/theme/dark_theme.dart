@@ -21,43 +21,50 @@ class AppDarkTheme {
         onBackground: AppColors.textOnDark,
       ),
       
-      // App Bar Theme
-      appBarTheme: const AppBarTheme(
+      // App Bar Theme with Gradient
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.surfaceDark,
         foregroundColor: AppColors.textOnDark,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           color: AppColors.textOnDark,
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
+        iconTheme: const IconThemeData(color: AppColors.textOnDark),
       ),
       
-      // Card Theme
+      // Card Theme with Glassmorphism
       cardTheme: CardThemeData(
-        color: AppColors.cardDark,
-        elevation: 2,
+        color: AppColors.cardDark.withOpacity(0.6),
+        elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: AppColors.glassBorderDark,
+            width: 1,
+          ),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
       
-      // Elevated Button Theme
+      // Elevated Button Theme with Gradient
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryLight,
+          backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
-          elevation: 2,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
+        ).copyWith(
+          overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)),
         ),
       ),
       
@@ -67,11 +74,11 @@ class AppDarkTheme {
           foregroundColor: AppColors.primaryLight,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
           ),
           textStyle: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -81,22 +88,22 @@ class AppDarkTheme {
         filled: true,
         fillColor: AppColors.surfaceDark,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.dividerDark),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.dividerDark),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.primaryLight, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.error),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         hintStyle: const TextStyle(
           color: AppColors.textOnDarkSecondary,
           fontSize: 14,
@@ -106,23 +113,26 @@ class AppDarkTheme {
       // Text Theme
       textTheme: const TextTheme(
         displayLarge: TextStyle(
+          fontSize: 36,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textOnDark,
+          letterSpacing: -0.5,
+        ),
+        displayMedium: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
           color: AppColors.textOnDark,
+          letterSpacing: -0.5,
         ),
-        displayMedium: TextStyle(
+        displaySmall: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.bold,
           color: AppColors.textOnDark,
-        ),
-        displaySmall: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textOnDark,
+          letterSpacing: -0.5,
         ),
         headlineLarge: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
           color: AppColors.textOnDark,
         ),
         headlineMedium: TextStyle(
@@ -137,47 +147,50 @@ class AppDarkTheme {
         ),
         titleLarge: TextStyle(
           fontSize: 16,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: AppColors.textOnDark,
         ),
         titleMedium: TextStyle(
           fontSize: 14,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: AppColors.textOnDark,
         ),
         titleSmall: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: AppColors.textOnDark,
         ),
         bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.normal,
           color: AppColors.textOnDark,
+          height: 1.5,
         ),
         bodyMedium: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.normal,
           color: AppColors.textOnDark,
+          height: 1.5,
         ),
         bodySmall: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.normal,
           color: AppColors.textOnDarkSecondary,
+          height: 1.4,
         ),
         labelLarge: TextStyle(
           fontSize: 14,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: AppColors.textOnDark,
         ),
         labelMedium: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: AppColors.textOnDarkSecondary,
         ),
         labelSmall: TextStyle(
           fontSize: 10,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: AppColors.textOnDarkSecondary,
         ),
       ),
@@ -195,8 +208,16 @@ class AppDarkTheme {
         space: 1,
       ),
       
-      // Scaffold Background
+      // Scaffold Background with Gradient
       scaffoldBackgroundColor: AppColors.backgroundDark,
+      
+      // Page Transitions
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          TargetPlatform.android: ZoomPageTransitionsBuilder(),
+          TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
+        },
+      ),
     );
   }
 }

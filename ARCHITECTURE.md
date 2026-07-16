@@ -150,3 +150,6 @@ Clean Architecture with layered separation:
 - Backend: Render with automatic deployments
 - Environment: Production, Staging, Development
 - Database: Firestore (shared across environments)
+## Latest UI and Feature Update - July 2026
+
+The presentation layer now provides more complete client-side interaction behavior: animated dashboard transitions, modal route guidance, snackbar-based task confirmation, stateful admin settings, and actionable operations controls. These improvements sit in the Flutter frontend and do not change the backend API contract.

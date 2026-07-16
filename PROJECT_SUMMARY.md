@@ -295,3 +295,6 @@ firebase deploy
 
 ## License
 MIT License
+## Latest UI and Feature Update - July 2026
+
+The app now includes a more polished animated Flutter experience across fan, volunteer, and admin dashboards. Added working fan quick-action sheets, responsive emergency feedback, volunteer alert actions, admin recommendation/report actions, and stateful admin settings so demo controls visibly do something useful.
