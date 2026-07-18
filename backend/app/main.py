@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="AI-powered Stadium Operations Platform for FIFA World Cup 2026",
+    description="AI-powered Stadium Operations Platform for live match operations",
     lifespan=lifespan
 )
 

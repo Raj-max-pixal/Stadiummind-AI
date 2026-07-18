@@ -133,3 +133,5 @@ MIT License
 ## Latest UI and Feature Update - July 2026
 
 The frontend has been refreshed with animated dashboard tab switching, a stronger fan match-day home card, working quick-action bottom sheets, emergency report/contact feedback, volunteer alert responses, admin recommendation/report controls, and stateful admin settings. `flutter analyze` was rerun after the changes with no filtered errors or warnings.
+
+The fan dashboard now includes a Rooms Near Me tab that requests location permission and loads real lodging data from OpenStreetMap Overpass. Pricing and live booking availability are shown only when verified data sources provide them.

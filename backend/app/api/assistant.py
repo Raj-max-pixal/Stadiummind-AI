@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from app.models.assistant import AssistantRequest, AssistantResponse, VoiceRequest, VoiceResponse
 from app.services.gemini_service import gemini_service
 
@@ -15,7 +15,7 @@ async def ask_assistant(request: AssistantRequest):
             context_str += f"Context: {request.context}\n"
         
         prompt = f"""
-You are an AI Stadium Assistant for FIFA World Cup 2026.
+You are an AI Stadium Assistant for live match operations.
 
 {context_str}
 User Question: {request.query}
@@ -33,7 +33,10 @@ Keep responses concise and actionable.
             confidence=0.85
         )
     except Exception as e:
-        raise Exception(f"Assistant error: {str(e)}")
+        raise HTTPException(
+            status_code=502,
+            detail=f"Assistant service error: {str(e)}",
+        )
 
 
 @router.post("/voice", response_model=VoiceResponse)

@@ -6,3 +6,5 @@ You can also do it by opening your Flutter project's Xcode project with `open io
 ## Latest UI and Feature Update - July 2026
 
 The app UI was refreshed outside this asset folder with animated dashboards and working fan, volunteer, emergency, and admin interactions. Launch image asset behavior is unchanged.
+
+Nearby rooms UI and location permissions are handled outside this asset folder.

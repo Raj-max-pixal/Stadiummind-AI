@@ -51,32 +51,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     super.dispose();
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
-      // Use auth provider for login
-      ref.read(authProvider.notifier).login(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      
-      // Navigate based on role (simulated for demo)
-      Future.delayed(const Duration(seconds: 1), () {
-        setState(() => _isLoading = false);
-        
-        switch (_selectedRole) {
-          case AppConstants.roleFan:
-            context.go(AppRoutes.fanDashboard);
-            break;
-          case AppConstants.roleVolunteer:
-            context.go(AppRoutes.volunteerDashboard);
-            break;
-          case AppConstants.roleAdmin:
-            context.go(AppRoutes.adminDashboard);
-            break;
-        }
-      });
+
+      await ref.read(authProvider.notifier).login(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+            role: _selectedRole,
+          );
+
+      if (!mounted) return;
+
+      final authState = ref.read(authProvider);
+      setState(() => _isLoading = false);
+
+      if (authState.status == AuthStatus.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authState.errorMessage ?? 'Login failed'),
+          ),
+        );
+        return;
+      }
+
+      final routeRole = authState.user?.role ?? _selectedRole;
+      switch (routeRole) {
+        case AppConstants.roleFan:
+          context.go(AppRoutes.fanDashboard);
+          break;
+        case AppConstants.roleVolunteer:
+          context.go(AppRoutes.volunteerDashboard);
+          break;
+        case AppConstants.roleAdmin:
+          context.go(AppRoutes.adminDashboard);
+          break;
+        default:
+          switch (_selectedRole) {
+            case AppConstants.roleFan:
+              context.go(AppRoutes.fanDashboard);
+              break;
+            case AppConstants.roleVolunteer:
+              context.go(AppRoutes.volunteerDashboard);
+              break;
+            case AppConstants.roleAdmin:
+              context.go(AppRoutes.adminDashboard);
+              break;
+          }
+      }
     }
   }
 
@@ -84,7 +106,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -130,7 +152,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                           ),
                           const SizedBox(height: 32),
-                          
+
                           // App Name
                           Text(
                             AppConstants.appName,
@@ -141,7 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                           ),
                           const SizedBox(height: 12),
-                          
+
                           // Tagline
                           Text(
                             AppConstants.appTagline,
@@ -151,7 +173,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                           ),
                           const SizedBox(height: 48),
-                          
+
                           // Login Form
                           CustomCard(
                             enableGlassmorphism: true,
@@ -165,7 +187,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   // Role Selection
                                   Text(
                                     'Select Role',
-                                    style: theme.textTheme.titleMedium?.copyWith(
+                                    style:
+                                        theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -187,70 +210,90 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         ButtonSegment(
                                           value: AppConstants.roleVolunteer,
                                           label: Text('Volunteer'),
-                                          icon: Icon(Icons.volunteer_activism, size: 18),
+                                          icon: Icon(Icons.volunteer_activism,
+                                              size: 18),
                                         ),
                                         ButtonSegment(
                                           value: AppConstants.roleAdmin,
                                           label: Text('Admin'),
-                                          icon: Icon(Icons.admin_panel_settings, size: 18),
+                                          icon: Icon(Icons.admin_panel_settings,
+                                              size: 18),
                                         ),
                                       ],
                                       selected: {_selectedRole},
-                                      onSelectionChanged: (Set<String> newSelection) {
+                                      onSelectionChanged:
+                                          (Set<String> newSelection) {
                                         setState(() {
                                           _selectedRole = newSelection.first;
                                         });
                                       },
                                       style: ButtonStyle(
-                                        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                        backgroundColor: MaterialStateProperty
+                                            .resolveWith<Color>(
                                           (Set<MaterialState> states) {
-                                            if (states.contains(MaterialState.selected)) {
+                                            if (states.contains(
+                                                MaterialState.selected)) {
                                               return AppColors.primary;
                                             }
                                             return Colors.transparent;
                                           },
                                         ),
-                                        foregroundColor: MaterialStateProperty.resolveWith<Color>(
+                                        foregroundColor: MaterialStateProperty
+                                            .resolveWith<Color>(
                                           (Set<MaterialState> states) {
-                                            if (states.contains(MaterialState.selected)) {
+                                            if (states.contains(
+                                                MaterialState.selected)) {
                                               return Colors.white;
                                             }
-                                            return isDark ? Colors.white : Colors.black;
+                                            return isDark
+                                                ? Colors.white
+                                                : Colors.black;
                                           },
                                         ),
                                       ),
                                     ),
                                   ),
                                   const SizedBox(height: 24),
-                                  
+
                                   // Email Field
                                   TextFormField(
                                     controller: _emailController,
                                     keyboardType: TextInputType.emailAddress,
                                     style: TextStyle(
-                                      color: isDark ? Colors.white : Colors.black,
+                                      color:
+                                          isDark ? Colors.white : Colors.black,
                                     ),
                                     decoration: InputDecoration(
                                       labelText: 'Email',
                                       hintText: 'Enter your email',
-                                      prefixIcon: const Icon(Icons.email_outlined),
+                                      prefixIcon:
+                                          const Icon(Icons.email_outlined),
                                       labelStyle: TextStyle(
-                                        color: isDark ? Colors.white70 : Colors.black54,
+                                        color: isDark
+                                            ? Colors.white70
+                                            : Colors.black54,
                                       ),
                                       hintStyle: TextStyle(
-                                        color: isDark ? Colors.white38 : Colors.black38,
+                                        color: isDark
+                                            ? Colors.white38
+                                            : Colors.black38,
                                       ),
-                                      prefixIconColor: MaterialStateColor.resolveWith(
-                                        (states) => states.contains(MaterialState.focused)
+                                      prefixIconColor:
+                                          MaterialStateColor.resolveWith(
+                                        (states) => states
+                                                .contains(MaterialState.focused)
                                             ? AppColors.primary
-                                            : (isDark ? Colors.white54 : Colors.black45),
+                                            : (isDark
+                                                ? Colors.white54
+                                                : Colors.black45),
                                       ),
                                     ),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Please enter your email';
                                       }
-                                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                      if (!RegExp(
+                                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                                           .hasMatch(value)) {
                                         return 'Please enter a valid email';
                                       }
@@ -258,41 +301,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     },
                                   ),
                                   const SizedBox(height: 16),
-                                  
+
                                   // Password Field
                                   TextFormField(
                                     controller: _passwordController,
                                     obscureText: _obscurePassword,
                                     style: TextStyle(
-                                      color: isDark ? Colors.white : Colors.black,
+                                      color:
+                                          isDark ? Colors.white : Colors.black,
                                     ),
                                     decoration: InputDecoration(
                                       labelText: 'Password',
                                       hintText: 'Enter your password',
-                                      prefixIcon: const Icon(Icons.lock_outlined),
+                                      prefixIcon:
+                                          const Icon(Icons.lock_outlined),
                                       suffixIcon: IconButton(
                                         icon: Icon(
                                           _obscurePassword
                                               ? Icons.visibility_outlined
                                               : Icons.visibility_off_outlined,
-                                          color: isDark ? Colors.white54 : Colors.black45,
+                                          color: isDark
+                                              ? Colors.white54
+                                              : Colors.black45,
                                         ),
                                         onPressed: () {
                                           setState(() {
-                                            _obscurePassword = !_obscurePassword;
+                                            _obscurePassword =
+                                                !_obscurePassword;
                                           });
                                         },
                                       ),
                                       labelStyle: TextStyle(
-                                        color: isDark ? Colors.white70 : Colors.black54,
+                                        color: isDark
+                                            ? Colors.white70
+                                            : Colors.black54,
                                       ),
                                       hintStyle: TextStyle(
-                                        color: isDark ? Colors.white38 : Colors.black38,
+                                        color: isDark
+                                            ? Colors.white38
+                                            : Colors.black38,
                                       ),
-                                      prefixIconColor: MaterialStateColor.resolveWith(
-                                        (states) => states.contains(MaterialState.focused)
+                                      prefixIconColor:
+                                          MaterialStateColor.resolveWith(
+                                        (states) => states
+                                                .contains(MaterialState.focused)
                                             ? AppColors.primary
-                                            : (isDark ? Colors.white54 : Colors.black45),
+                                            : (isDark
+                                                ? Colors.white54
+                                                : Colors.black45),
                                       ),
                                     ),
                                     validator: (value) {
@@ -306,7 +362,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     },
                                   ),
                                   const SizedBox(height: 32),
-                                  
+
                                   // Login Button
                                   CustomButton(
                                     text: 'Login',
@@ -320,24 +376,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                           ),
                           const SizedBox(height: 24),
-                          
-                          // Demo Note
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              'Demo: Use any email/password to login',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: Colors.white.withOpacity(0.8),
-                              ),
-                              textAlign: TextAlign.center,
+
+                          TextButton(
+                            onPressed: () {
+                              if (_emailController.text.trim().isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Enter your email to reset password.',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              ref.read(authProvider.notifier).resetPassword(
+                                    _emailController.text.trim(),
+                                  );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Password reset email requested.',
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Forgot password?',
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ],

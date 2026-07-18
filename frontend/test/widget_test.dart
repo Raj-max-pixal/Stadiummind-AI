@@ -20,6 +20,8 @@ void main() {
       ),
     );
 
+    await tester.pump(const Duration(milliseconds: 2600));
+
     // Verify that the app loads
     expect(find.byType(Scaffold), findsWidgets);
   });

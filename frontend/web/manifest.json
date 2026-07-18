@@ -1,11 +1,11 @@
 {
-    "name": "stadiummind_ai",
-    "short_name": "stadiummind_ai",
+    "name": "StadiumMind AI",
+    "short_name": "StadiumMind",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "AI-powered stadium operations platform for live match operations.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

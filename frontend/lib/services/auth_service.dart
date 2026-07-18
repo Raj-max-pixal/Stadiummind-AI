@@ -1,19 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+
+import '../core/constants/app_constants.dart';
 import '../models/user_model.dart';
 
 class AuthService {
-  // Current user stream
+  final firebase_auth.FirebaseAuth _auth;
+  final FirebaseFirestore _firestore;
+
+  AuthService({
+    firebase_auth.FirebaseAuth? auth,
+    FirebaseFirestore? firestore,
+  })  : _auth = auth ?? firebase_auth.FirebaseAuth.instance,
+        _firestore = firestore ?? FirebaseFirestore.instance;
+
   Stream<UserModel?> get userStream {
-    // TODO: Replace with actual Firebase Auth stream
-    return Stream.value(null);
+    return _auth.authStateChanges().asyncMap((user) async {
+      if (user == null) return null;
+      return _userFromFirebase(user);
+    });
   }
-  
-  // Get current user
+
   Future<UserModel?> getCurrentUser() async {
-    // TODO: Replace with actual Firebase Auth
-    return null;
+    final user = _auth.currentUser;
+    if (user == null) return null;
+    return _userFromFirebase(user);
   }
-  
-  // Register with email and password
+
   Future<UserModel?> registerWithEmailPassword({
     required String email,
     required String password,
@@ -21,86 +34,121 @@ class AuthService {
     required String role,
   }) async {
     try {
-      // TODO: Replace with actual Firebase Auth
-      // final credential = await _auth.createUserWithEmailAndPassword(
-      //   email: email,
-      //   password: password,
-      // );
-      
-      // Update display name
-      // await credential.user?.updateDisplayName(name);
-      
-      // Create user document in Firestore
-      // await _firestore.collection('users').doc(credential.user?.uid).set({
-      //   'email': email,
-      //   'name': name,
-      //   'role': role,
-      //   'createdAt': FieldValue.serverTimestamp(),
-      // });
-      
-      // Return user model
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = credential.user;
+      if (user == null) return null;
+
+      await user.updateDisplayName(name);
+      await _firestore.collection('users').doc(user.uid).set({
+        'email': email,
+        'name': name,
+        'role': role,
+        'isActive': true,
+        'createdAt': FieldValue.serverTimestamp(),
+        'lastLogin': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
       return UserModel(
-        id: 'mock_id',
+        id: user.uid,
         email: email,
         name: name,
         role: role,
         isActive: true,
         createdAt: DateTime.now(),
+        lastLogin: DateTime.now(),
       );
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      throw Exception(e.message ?? 'Registration failed');
     } catch (e) {
       throw Exception('Registration failed: $e');
     }
   }
-  
-  // Login with email and password
+
   Future<UserModel?> loginWithEmailPassword({
     required String email,
     required String password,
+    String fallbackRole = AppConstants.roleFan,
   }) async {
     try {
-      // TODO: Replace with actual Firebase Auth
-      // final credential = await _auth.signInWithEmailAndPassword(
-      //   email: email,
-      //   password: password,
-      // );
-      
-      // Fetch user document from Firestore
-      // final doc = await _firestore.collection('users').doc(credential.user?.uid).get();
-      // final data = doc.data();
-      
-      // Return user model
-      return UserModel(
-        id: 'mock_id',
+      final credential = await _auth.signInWithEmailAndPassword(
         email: email,
-        name: 'Mock User',
-        role: 'fan', // Would be fetched from Firestore
-        isActive: true,
-        lastLogin: DateTime.now(),
+        password: password,
       );
+
+      final user = credential.user;
+      if (user == null) return null;
+
+      final profile = await _userFromFirebase(
+        user,
+        fallbackRole: fallbackRole,
+      );
+
+      await _firestore.collection('users').doc(user.uid).set({
+        'email': user.email ?? email,
+        'name': profile.name,
+        'role': profile.role,
+        'isActive': true,
+        'lastLogin': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      return profile;
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      throw Exception(e.message ?? 'Login failed');
     } catch (e) {
       throw Exception('Login failed: $e');
     }
   }
-  
-  // Logout
+
   Future<void> logout() async {
     try {
-      // TODO: Replace with actual Firebase Auth
-      // await _auth.signOut();
+      await _auth.signOut();
     } catch (e) {
       throw Exception('Logout failed: $e');
     }
   }
-  
-  // Reset password
+
   Future<void> resetPassword(String email) async {
     try {
-      // TODO: Replace with actual Firebase Auth
+      await _auth.sendPasswordResetEmail(email: email);
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      throw Exception(e.message ?? 'Password reset failed');
     } catch (e) {
       throw Exception('Password reset failed: $e');
     }
   }
+
+  Future<UserModel> _userFromFirebase(
+    firebase_auth.User user, {
+    String fallbackRole = AppConstants.roleFan,
+  }) async {
+    final doc = await _firestore.collection('users').doc(user.uid).get();
+    final data = doc.data() ?? {};
+
+    return UserModel(
+      id: user.uid,
+      email: user.email ?? data['email']?.toString() ?? '',
+      name: data['name']?.toString() ??
+          user.displayName ??
+          user.email?.split('@').first ??
+          'StadiumMind User',
+      role: data['role']?.toString() ?? fallbackRole,
+      phoneNumber: data['phoneNumber']?.toString(),
+      profileImageUrl: data['profileImageUrl']?.toString(),
+      isActive: data['isActive'] as bool? ?? true,
+      createdAt: _dateFromTimestamp(data['createdAt']),
+      lastLogin: _dateFromTimestamp(data['lastLogin']) ?? DateTime.now(),
+    );
+  }
+
+  DateTime? _dateFromTimestamp(Object? value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    return null;
+  }
 }
 
-// Singleton instance
 final authService = AuthService();

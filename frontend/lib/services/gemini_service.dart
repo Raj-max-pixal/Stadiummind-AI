@@ -22,7 +22,13 @@ class GeminiService {
           'context': context,
         },
       );
-      return response.data['response'];
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['response'] != null) {
+        return data['response'].toString();
+      }
+      throw Exception('Invalid assistant response from backend.');
+    } on DioException catch (e) {
+      throw Exception(_formatDioError(e, 'AI Assistant'));
     } catch (e) {
       throw Exception('Assistant error: $e');
     }
@@ -41,6 +47,8 @@ class GeminiService {
         },
       );
       return response.data;
+    } on DioException catch (e) {
+      throw Exception(_formatDioError(e, 'Crowd prediction'));
     } catch (e) {
       throw Exception('Prediction error: $e');
     }
@@ -52,6 +60,8 @@ class GeminiService {
         '${ApiConstants.crowdPath}/recommendations',
       );
       return response.data;
+    } on DioException catch (e) {
+      throw Exception(_formatDioError(e, 'Gate recommendations'));
     } catch (e) {
       throw Exception('Recommendations error: $e');
     }
@@ -72,6 +82,8 @@ class GeminiService {
         },
       );
       return response.data['translated_text'];
+    } on DioException catch (e) {
+      throw Exception(_formatDioError(e, 'Translation'));
     } catch (e) {
       throw Exception('Translation error: $e');
     }
@@ -83,9 +95,31 @@ class GeminiService {
         '${ApiConstants.adminPath}/executive-briefing',
       );
       return response.data['briefing'];
+    } on DioException catch (e) {
+      throw Exception(_formatDioError(e, 'Executive briefing'));
     } catch (e) {
       throw Exception('Executive briefing error: $e');
     }
+  }
+
+  String _formatDioError(DioException error, String feature) {
+    final response = error.response;
+    if (response != null) {
+      final data = response.data;
+      if (data is Map && data['detail'] != null) {
+        return '$feature failed: ${data['detail']}';
+      }
+      return '$feature failed with HTTP ${response.statusCode}.';
+    }
+
+    const backendUrl = ApiConstants.baseUrl;
+    if (backendUrl.contains('localhost') || backendUrl.contains('127.0.0.1')) {
+      return '$feature cannot reach the backend at $backendUrl. '
+          'For the published website, rebuild with --dart-define=BACKEND_URL=https://your-backend-url and --dart-define=BACKEND_WS_URL=wss://your-backend-url.';
+    }
+
+    return '$feature cannot reach the backend at $backendUrl. '
+        'Check that the backend is running, CORS allows this website, and the URL uses HTTPS.';
   }
 }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/color_palette.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/custom_button.dart';
@@ -98,7 +99,7 @@ class _OverviewScreen extends StatelessWidget {
                   style: theme.textTheme.titleLarge,
                 ),
                 Text(
-                  'FIFA World Cup 2026',
+                  AppConstants.eventName,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.7),
                   ),

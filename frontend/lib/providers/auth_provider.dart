@@ -91,12 +91,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> login({
     required String email,
     required String password,
+    String? role,
   }) async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
       final user = await _authService.loginWithEmailPassword(
         email: email,
         password: password,
+        fallbackRole: role ?? 'fan',
       );
       state = state.copyWith(
         status: AuthStatus.authenticated,

@@ -1,7 +1,7 @@
 # STADIUMMIND AI - System Architecture
 
 ## Overview
-Production-quality stadium operations platform powered by Generative AI for FIFA World Cup 2026.
+Production-quality stadium operations platform powered by Generative AI for live match operations.
 
 ## Architecture Pattern
 Clean Architecture with layered separation:
@@ -153,3 +153,5 @@ Clean Architecture with layered separation:
 ## Latest UI and Feature Update - July 2026
 
 The presentation layer now provides more complete client-side interaction behavior: animated dashboard transitions, modal route guidance, snackbar-based task confirmation, stateful admin settings, and actionable operations controls. These improvements sit in the Flutter frontend and do not change the backend API contract.
+
+The Rooms Near Me feature is client-side and reads real lodging data from OpenStreetMap Overpass using the user's granted location; booking inventory is intentionally not modeled without a verified booking provider API.

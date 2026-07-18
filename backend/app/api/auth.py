@@ -7,10 +7,9 @@ router = APIRouter()
 
 @router.post("/register", response_model=Dict[str, Any])
 async def register(user: UserCreate):
-    """Register a new user"""
-    # TODO: Implement Firebase Auth registration
+    """Return Firebase client-auth registration guidance."""
     return {
-        "message": "Registration endpoint - Firebase Auth integration pending",
+        "message": "Registration is handled by Firebase Auth in the web client.",
         "user": {
             "email": user.email,
             "name": user.name,
@@ -21,12 +20,11 @@ async def register(user: UserCreate):
 
 @router.post("/login", response_model=Dict[str, Any])
 async def login(user: UserLogin):
-    """Login user"""
-    # TODO: Implement Firebase Auth login
+    """Return Firebase client-auth login guidance."""
     return {
-        "message": "Login endpoint - Firebase Auth integration pending",
+        "message": "Login is handled by Firebase Auth in the web client.",
         "email": user.email,
-        "token": "mock_token"
+        "token_source": "firebase_id_token"
     }
 
 
@@ -38,14 +36,8 @@ async def logout():
 
 @router.get("/user", response_model=Dict[str, Any])
 async def get_user():
-    """Get current user info"""
-    # TODO: Implement Firebase Auth user retrieval
+    """Return current auth architecture."""
     return {
-        "message": "User endpoint - Firebase Auth integration pending",
-        "user": {
-            "id": "mock_id",
-            "email": "user@example.com",
-            "name": "Mock User",
-            "role": "fan"
-        }
+        "message": "User identity is read from Firebase Auth and Firestore by the web client.",
+        "user_source": "firebase_auth_firestore"
     }

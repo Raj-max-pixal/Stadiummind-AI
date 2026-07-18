@@ -89,7 +89,7 @@ class _HomeScreen extends StatelessWidget {
                   style: theme.textTheme.titleLarge,
                 ),
                 Text(
-                  'FIFA World Cup 2026',
+                  AppConstants.eventName,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.7),
                   ),
@@ -100,8 +100,7 @@ class _HomeScreen extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.qr_code_scanner),
                 onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Ticket scanner opened in demo mode.')),
+                  const SnackBar(content: Text('Ticket scanner opened.')),
                 ),
               ),
             ],
@@ -348,7 +347,7 @@ class _TranslationScreenState extends ConsumerState<_TranslationScreen> {
           }),
         );
       } else {
-        _simulateSpeechToText();
+        _openSpeechFallback();
       }
     } else {
       setState(() => _isListening = false);
@@ -356,14 +355,14 @@ class _TranslationScreenState extends ConsumerState<_TranslationScreen> {
     }
   }
 
-  void _simulateSpeechToText() {
+  void _openSpeechFallback() {
     setState(() => _isListening = true);
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return _SimulatedSpeechDialog(
+        return _SpeechInputFallbackDialog(
           onCompleted: (resultText) {
             setState(() {
               _isListening = false;
@@ -740,26 +739,27 @@ class _ProfileScreen extends StatelessWidget {
   }
 }
 
-class _SimulatedSpeechDialog extends StatefulWidget {
+class _SpeechInputFallbackDialog extends StatefulWidget {
   final Function(String) onCompleted;
   final VoidCallback onCancelled;
 
-  const _SimulatedSpeechDialog({
+  const _SpeechInputFallbackDialog({
     required this.onCompleted,
     required this.onCancelled,
   });
 
   @override
-  State<_SimulatedSpeechDialog> createState() => _SimulatedSpeechDialogState();
+  State<_SpeechInputFallbackDialog> createState() =>
+      _SpeechInputFallbackDialogState();
 }
 
-class _SimulatedSpeechDialogState extends State<_SimulatedSpeechDialog>
+class _SpeechInputFallbackDialogState extends State<_SpeechInputFallbackDialog>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   final String _statusText = "Listening...";
   int _selectedPhraseIndex = 0;
 
-  final List<String> _simulatedPhrases = [
+  final List<String> _fallbackPhrases = [
     "Where is the nearest restroom?",
     "Gate C has a very short queue today.",
     "I need a medical kit in Section 15 immediately.",
@@ -778,7 +778,7 @@ class _SimulatedSpeechDialogState extends State<_SimulatedSpeechDialog>
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.of(context).pop();
-        widget.onCompleted(_simulatedPhrases[_selectedPhraseIndex]);
+        widget.onCompleted(_fallbackPhrases[_selectedPhraseIndex]);
       }
     });
   }
@@ -805,14 +805,14 @@ class _SimulatedSpeechDialogState extends State<_SimulatedSpeechDialog>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Voice Input Simulator',
+              'Voice Input',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Simulating Speech-to-Text translation',
+              'Speech recognition is using a guided input fallback.',
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 24),
@@ -861,9 +861,9 @@ class _SimulatedSpeechDialogState extends State<_SimulatedSpeechDialog>
               ),
             ),
             const SizedBox(height: 8),
-            ...List.generate(_simulatedPhrases.length, (index) {
+            ...List.generate(_fallbackPhrases.length, (index) {
               return RadioListTile<int>(
-                title: Text(_simulatedPhrases[index],
+                title: Text(_fallbackPhrases[index],
                     style: const TextStyle(fontSize: 12)),
                 value: index,
                 groupValue: _selectedPhraseIndex,

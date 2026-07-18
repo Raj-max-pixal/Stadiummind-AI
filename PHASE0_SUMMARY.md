@@ -125,3 +125,5 @@ flutter create frontend
 ## Latest UI and Feature Update - July 2026
 
 Phase 0 now includes a refreshed Flutter UI pass: animated dashboard tab switching, enhanced fan home content, actionable bottom sheets, emergency/contact feedback, volunteer task responses, admin action feedback, and persistent admin settings controls.
+
+Phase 0 also adds real-data nearby rooms lookup through OpenStreetMap Overpass and device/browser location permissions.

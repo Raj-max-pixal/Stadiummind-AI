@@ -304,3 +304,5 @@ chore: update dependencies
 ## Latest UI and Feature Update - July 2026
 
 Recent frontend work focused on `frontend/lib/screens/fan`, `frontend/lib/screens/volunteer`, `frontend/lib/screens/admin`, and shared widgets under `frontend/lib/widgets/common`. The update adds animated tab transitions, interactive fan actions, emergency feedback, volunteer alert responses, admin operations controls, and settings state.
+
+Real nearby rooms support lives in `frontend/lib/screens/fan/hotel_rooms_screen.dart`, `frontend/lib/services/hotel_room_service.dart`, and `frontend/lib/models/hotel_room_model.dart`.

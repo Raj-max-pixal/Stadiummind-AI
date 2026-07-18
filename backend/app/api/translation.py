@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from app.models.translation import TranslationRequest, TranslationResponse, VoiceTranslationRequest, VoiceTranslationResponse
 from app.services.gemini_service import gemini_service
 
@@ -22,7 +22,10 @@ async def translate_text(request: TranslationRequest):
             confidence=0.9
         )
     except Exception as e:
-        raise Exception(f"Translation error: {str(e)}")
+        raise HTTPException(
+            status_code=502,
+            detail=f"Translation service error: {str(e)}",
+        )
 
 
 @router.post("/voice", response_model=VoiceTranslationResponse)

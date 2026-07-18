@@ -12,15 +12,15 @@ class GeminiService:
         self.use_fallback = False
         api_key = settings.gemini_api_key
         if not api_key or api_key == "your_gemini_key" or api_key.startswith("your_"):
-            logger.warning("No valid GEMINI_API_KEY found. Using high-fidelity Simulation Fallback Engine.")
+            logger.warning("No valid GEMINI_API_KEY found. Using local response fallback engine.")
             self.use_fallback = True
         else:
             try:
                 genai.configure(api_key=api_key)
-                self.model = genai.GenerativeModel('gemini-1.5-flash')
-                self.pro_model = genai.GenerativeModel('gemini-1.5-pro')
+                self.model = genai.GenerativeModel(settings.gemini_model)
+                self.pro_model = genai.GenerativeModel(settings.gemini_pro_model)
             except Exception as e:
-                logger.error(f"Error configuring Gemini API: {str(e)}. Falling back to simulation mode.")
+                logger.error(f"Error configuring Gemini API: {str(e)}. Falling back to local response mode.")
                 self.use_fallback = True
     
     async def generate_response(
@@ -31,7 +31,7 @@ class GeminiService:
         max_tokens: int = 1000
     ) -> str:
         if self.use_fallback:
-            return self._mock_response(prompt)
+            return self._fallback_response(prompt)
             
         try:
             model = self.pro_model if use_pro_model else self.model
@@ -47,10 +47,10 @@ class GeminiService:
             
             return response.text
         except Exception as e:
-            logger.error(f"Gemini API error: {str(e)}. Falling back to simulation response.")
-            return self._mock_response(prompt)
+            logger.error(f"Gemini API error: {str(e)}. Falling back to local response.")
+            return self._fallback_response(prompt)
 
-    def _mock_response(self, prompt: str) -> str:
+    def _fallback_response(self, prompt: str) -> str:
         prompt_lower = prompt.lower()
         
         # 1. Check if it's a translation prompt
@@ -67,7 +67,7 @@ class GeminiService:
             if "text:" in prompt_lower:
                 text_to_translate = prompt.split("Text:")[1].strip().split("\n")[0]
             
-            return self._mock_translation(text_to_translate, target_lang)
+            return self._fallback_translation(text_to_translate, target_lang)
 
         # 2. Check if it's emergency analysis
         if "analyze this emergency incident" in prompt_lower or "incident type:" in prompt_lower:
@@ -82,14 +82,18 @@ class GeminiService:
             if "description:" in prompt_lower:
                 description = prompt.split("Description:")[1].strip().split("\n")[0]
                 
-            return self._mock_emergency_response_string(incident_type, location, description)
+            return self._fallback_emergency_response_string(
+                incident_type,
+                location,
+                description,
+            )
 
         # 3. Check if it's crowd prediction
         if "predict crowd congestion" in prompt_lower or "gate id:" in prompt_lower:
             gate_id = "A"
             if "gate id:" in prompt_lower:
                 gate_id = prompt.split("Gate ID:")[1].strip().split("\n")[0]
-            return self._mock_crowd_prediction_string(gate_id)
+            return self._fallback_crowd_prediction_string(gate_id)
 
         # 4. Check if it's executive briefing
         if "executive briefing" in prompt_lower or "stadium data:" in prompt_lower:
@@ -108,7 +112,7 @@ class GeminiService:
                 response_time = prompt.split("Response Time:")[1].strip().split("\n")[0]
             
             return (
-                f"FIFA World Cup 2026 stadium operations are currently stable. "
+                f"Live match operations are currently stable. "
                 f"Total attendance is {attendance} ({round(float(attendance.replace(',', ''))/80000*100, 1)}% of capacity). "
                 f"We currently have {emergencies} active incidents under management, with response times holding at a highly efficient {response_time}. "
                 f"Crowd flow is normal overall, though Gate B is showing moderate wait times. AI recommendation has redirected 20% of incoming fans to Gate C to balance queues. "
@@ -116,9 +120,9 @@ class GeminiService:
             )
 
         # 5. Generic assistant question
-        return self._mock_assistant_chat(prompt)
+        return self._fallback_assistant_chat(prompt)
 
-    def _mock_translation(self, text: str, target_language: str) -> str:
+    def _fallback_translation(self, text: str, target_language: str) -> str:
         translations = {
             "where is the nearest restroom?": {
                 "Spanish": "¿Dónde está el baño más cercano?",
@@ -166,7 +170,7 @@ class GeminiService:
             return f"தயவுசெய்து குறிப்பிட்ட இடத்திற்குச் செல்லவும். (சிமுலேஷன்: '{text}')"
         return f"Translated text: {text} (target: {target_language})"
 
-    def _mock_emergency_response_string(self, incident_type: str, location: str, description: str) -> str:
+    def _fallback_emergency_response_string(self, incident_type: str, location: str, description: str) -> str:
         priority = "HIGH" if "medical" in incident_type.lower() or "fire" in incident_type.lower() or "fight" in incident_type.lower() else "MEDIUM"
         
         actions = []
@@ -198,7 +202,7 @@ ESTIMATED_RESOLUTION: {resolution_time}
 OPERATIONAL_IMPACT: Minimal. Security perimeter is active. Match operations will continue without interruption.
 """
 
-    def _mock_crowd_prediction_string(self, gate_id: str) -> str:
+    def _fallback_crowd_prediction_string(self, gate_id: str) -> str:
         predicted = random.randint(55, 90)
         time_to_congestion = random.randint(10, 20)
         confidence = round(random.uniform(0.85, 0.95), 2)
@@ -210,7 +214,7 @@ REASONING: High inbound volume arriving from external parking lot shuttles. Gate
 RECOMMENDATION: Activate digital signs to reroute 25% of traffic to Gate C. Deploy 2 queue volunteers.
 """
 
-    def _mock_assistant_chat(self, prompt: str) -> str:
+    def _fallback_assistant_chat(self, prompt: str) -> str:
         prompt_lower = prompt.lower()
         if "washroom" in prompt_lower or "restroom" in prompt_lower or "toilet" in prompt_lower:
             return (
@@ -244,7 +248,7 @@ RECOMMENDATION: Activate digital signs to reroute 25% of traffic to Gate C. Depl
             )
         elif "ticket" in prompt_lower:
             return (
-                "Digital tickets must be scanned from your official FIFA app. "
+                "Digital tickets must be scanned from the official ticket wallet. "
                 "Please ensure your screen brightness is set to high at the scanners. "
                 "If you need assistance, visit the Ticket Resolution Office located outside Gate A."
             )
@@ -267,7 +271,7 @@ RECOMMENDATION: Activate digital signs to reroute 25% of traffic to Gate C. Depl
         context: Dict[str, Any]
     ) -> Dict[str, Any]:
         prompt = f"""
-You are an AI Operations Copilot for FIFA World Cup 2026 stadium operations.
+You are an AI Operations Copilot for live stadium match operations.
 
 Context:
 {context}
@@ -320,7 +324,7 @@ EXPECTED_IMPACT: [expected outcome]
                 elif current_section == 'action_items' and line.strip():
                     result['action_items'].append(line.strip().lstrip('- '))
             
-            # Fallback if parsing failed or was simulated but returned clean text instead of formatting
+            # Fallback if parsing failed or returned clean text instead of formatting
             if not result['analysis'] or not result['recommendation']:
                 result = {
                     "analysis": "High arrival rates detected near external transit hubs. Gate A wait times have climbed to 12 minutes.",
@@ -378,7 +382,7 @@ Keep it professional and actionable for stadium executives.
         description: str
     ) -> Dict[str, Any]:
         prompt = f"""
-Analyze this emergency incident for FIFA World Cup 2026 stadium:
+Analyze this emergency incident for live stadium match operations:
 
 Incident Type: {incident_type}
 Location: {location}

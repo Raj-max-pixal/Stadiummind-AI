@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/color_palette.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../providers/assistant_provider.dart';
@@ -203,7 +204,7 @@ class _HomeScreen extends StatelessWidget {
                   style: theme.textTheme.titleLarge,
                 ),
                 Text(
-                  'FIFA World Cup 2026',
+                  AppConstants.eventName,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.7),
                   ),
@@ -235,7 +236,7 @@ class _HomeScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Argentina vs Portugal',
+                                AppConstants.primaryMatch,
                                 style: theme.textTheme.titleLarge?.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -246,6 +247,14 @@ class _HomeScreen extends StatelessWidget {
                                 'Kickoff in 42 min - Seat 214B - Gate C recommended',
                                 style: TextStyle(
                                     color: Colors.white70, height: 1.35),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Next match: ${AppConstants.secondaryMatch}',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ],
                           ),
@@ -383,7 +392,7 @@ class _HomeScreen extends StatelessWidget {
                             route:
                                 'Rooms tab -> location permission -> Overpass query',
                             tips: const [
-                              'No fake hotel names, prices, or availability are shown.',
+                              'Hotel names, prices, and availability are shown only when verified data is available.',
                               'Room and bed counts appear only when OSM provides them.',
                             ],
                           ),
@@ -672,7 +681,7 @@ class _AssistantScreenState extends ConsumerState<_AssistantScreen> {
   final List<ChatMessage> _messages = [
     ChatMessage(
       text:
-          "Hello! I am your FIFA 2026 AI Assistant. Ask me anything about stadium facilities, gates, food zones, or match timings!",
+          "Hello! I am your StadiumMind AI Assistant. Ask me anything about stadium facilities, gates, food zones, or match timings for France vs England and Spain vs Argentina.",
       isUser: false,
       timestamp: DateTime.now(),
     ),
@@ -784,7 +793,7 @@ class _AssistantScreenState extends ConsumerState<_AssistantScreen> {
                 const Text('AI Assistant',
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('FIFA operations assistant',
+                Text('Match operations assistant',
                     style: TextStyle(
                         fontSize: 11, color: Colors.white.withOpacity(0.8))),
               ],
@@ -1102,8 +1111,22 @@ class _DotAnimationState extends State<_DotAnimation>
   }
 }
 
-class _ProfileScreen extends StatelessWidget {
+class _ProfileScreen extends StatefulWidget {
   const _ProfileScreen();
+
+  @override
+  State<_ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<_ProfileScreen> {
+  String _language = 'English';
+  bool _notificationsEnabled = true;
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1119,62 +1142,117 @@ class _ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Profile Header
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: theme.colorScheme.primary,
-              child: const Icon(
-                Icons.person,
-                size: 50,
-                color: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 132),
+          child: Column(
+            children: [
+              // Profile Header
+              CircleAvatar(
+                radius: 48,
+                backgroundColor: theme.colorScheme.primary,
+                child: const Icon(
+                  Icons.person,
+                  size: 48,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Fan User',
-              style: theme.textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'fan@stadiummind.ai',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              const SizedBox(height: 16),
+              Text(
+                'Fan User',
+                style: theme.textTheme.headlineMedium,
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 8),
+              Text(
+                'fan@stadiummind.ai',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 24),
 
-            // Profile Options
-            CustomCard(
-              child: ListTile(
-                leading: const Icon(Icons.language),
-                title: const Text('Language'),
-                subtitle: const Text('English'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+              // Profile Options
+              CustomCard(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  leading: const Icon(Icons.language),
+                  title: const Text('Language'),
+                  subtitle: Text(_language),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    showModalBottomSheet<void>(
+                      context: context,
+                      showDragHandle: true,
+                      builder: (context) => Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: ['English', 'Spanish', 'Hindi', 'Tamil']
+                            .map(
+                              (language) => ListTile(
+                                title: Text(language),
+                                trailing: language == _language
+                                    ? Icon(
+                                        Icons.check,
+                                        color: theme.colorScheme.primary,
+                                      )
+                                    : null,
+                                onTap: () {
+                                  setState(() => _language = language);
+                                  Navigator.pop(context);
+                                  _showSnack(
+                                    'Language changed to $language.',
+                                  );
+                                },
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-            CustomCard(
-              child: ListTile(
-                leading: const Icon(Icons.notifications),
-                title: const Text('Notifications'),
-                subtitle: const Text('Enabled'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+              CustomCard(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: SwitchListTile(
+                  secondary: const Icon(Icons.notifications),
+                  title: const Text('Notifications'),
+                  subtitle: Text(_notificationsEnabled ? 'Enabled' : 'Muted'),
+                  value: _notificationsEnabled,
+                  onChanged: (value) {
+                    setState(() => _notificationsEnabled = value);
+                    _showSnack(
+                      value ? 'Notifications enabled.' : 'Notifications muted.',
+                    );
+                  },
+                ),
               ),
-            ),
-            CustomCard(
-              child: ListTile(
-                leading: const Icon(Icons.help_outline),
-                title: const Text('Help & Support'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+              CustomCard(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  leading: const Icon(Icons.help_outline),
+                  title: const Text('Help & Support'),
+                  subtitle: const Text('Stadium assistance, rooms, safety'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Help & Support'),
+                        content: const Text(
+                          'For match-day support, use AI Assistant, Emergency, or Rooms Near Me. Hotel data is loaded from OpenStreetMap and pricing appears only when a verified source provides it.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Close'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

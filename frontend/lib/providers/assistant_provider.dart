@@ -35,24 +35,21 @@ class AssistantNotifier extends StateNotifier<AssistantState> {
     String userRole = 'fan',
     Map<String, dynamic>? context,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = AssistantState(isLoading: true);
     try {
       final response = await _geminiService.askAssistant(
         query: query,
         userRole: userRole,
         context: context,
       );
-      state = state.copyWith(response: response, isLoading: false);
+      state = AssistantState(response: response);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      );
+      state = AssistantState(errorMessage: e.toString());
     }
   }
 
   void clearResponse() {
-    state = state.copyWith(response: null, errorMessage: null);
+    state = AssistantState();
   }
 }
 
@@ -60,6 +57,7 @@ final assistantServiceProvider = Provider<GeminiService>((ref) {
   return geminiService;
 });
 
-final assistantProvider = StateNotifierProvider<AssistantNotifier, AssistantState>((ref) {
+final assistantProvider =
+    StateNotifierProvider<AssistantNotifier, AssistantState>((ref) {
   return AssistantNotifier(ref.watch(assistantServiceProvider));
 });

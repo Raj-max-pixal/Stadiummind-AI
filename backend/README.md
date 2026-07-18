@@ -195,3 +195,5 @@ MIT License
 ## Latest UI and Feature Update - July 2026
 
 The latest work was frontend-focused. Backend API contracts remain unchanged while the Flutter app now provides better animated dashboards and working client-side interactions for fan guidance, volunteer response, emergency reporting, and admin operations actions.
+
+Nearby rooms lookup is currently implemented in the frontend through OpenStreetMap Overpass and does not require a backend endpoint.
