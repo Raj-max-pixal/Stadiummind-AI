@@ -2,21 +2,32 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 class FirebaseConfig {
+  static const Duration _initializeTimeout = Duration(seconds: 8);
+  static bool _isAvailable = false;
+
+  static bool get isAvailable => _isAvailable;
+
   static Future<void> initialize() async {
     try {
-      if (Firebase.apps.isNotEmpty) return;
+      if (Firebase.apps.isNotEmpty) {
+        _isAvailable = true;
+        return;
+      }
 
       final options = _optionsFromEnvironment();
       if (options != null) {
-        await Firebase.initializeApp(options: options);
+        await Firebase.initializeApp(options: options)
+            .timeout(_initializeTimeout);
       } else {
-        await Firebase.initializeApp();
+        await Firebase.initializeApp().timeout(_initializeTimeout);
       }
 
+      _isAvailable = true;
       if (kDebugMode) {
         print('Firebase initialized');
       }
     } catch (e) {
+      _isAvailable = false;
       if (kDebugMode) {
         print('Firebase initialization error: $e');
       }

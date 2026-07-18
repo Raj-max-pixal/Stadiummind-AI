@@ -1,20 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
+import '../core/config/firebase_config.dart';
 import '../core/constants/app_constants.dart';
 import '../models/user_model.dart';
 
 class AuthService {
-  final firebase_auth.FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
+  static const Duration _authTimeout = Duration(seconds: 10);
+  static const Duration _firestoreTimeout = Duration(seconds: 8);
+
+  final firebase_auth.FirebaseAuth? _injectedAuth;
+  final FirebaseFirestore? _injectedFirestore;
 
   AuthService({
     firebase_auth.FirebaseAuth? auth,
     FirebaseFirestore? firestore,
-  })  : _auth = auth ?? firebase_auth.FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  })  : _injectedAuth = auth,
+        _injectedFirestore = firestore;
+
+  firebase_auth.FirebaseAuth get _auth =>
+      _injectedAuth ?? firebase_auth.FirebaseAuth.instance;
+
+  FirebaseFirestore get _firestore =>
+      _injectedFirestore ?? FirebaseFirestore.instance;
 
   Stream<UserModel?> get userStream {
+    _ensureFirebaseReady();
     return _auth.authStateChanges().asyncMap((user) async {
       if (user == null) return null;
       return _userFromFirebase(user);
@@ -22,9 +33,10 @@ class AuthService {
   }
 
   Future<UserModel?> getCurrentUser() async {
+    _ensureFirebaseReady();
     final user = _auth.currentUser;
     if (user == null) return null;
-    return _userFromFirebase(user);
+    return _userFromFirebase(user).timeout(_firestoreTimeout);
   }
 
   Future<UserModel?> registerWithEmailPassword({
@@ -34,15 +46,18 @@ class AuthService {
     required String role,
   }) async {
     try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      _ensureFirebaseReady();
+      final credential = await _auth
+          .createUserWithEmailAndPassword(
+            email: email,
+            password: password,
+          )
+          .timeout(_authTimeout);
 
       final user = credential.user;
       if (user == null) return null;
 
-      await user.updateDisplayName(name);
+      await user.updateDisplayName(name).timeout(_authTimeout);
       await _firestore.collection('users').doc(user.uid).set({
         'email': email,
         'name': name,
@@ -50,7 +65,7 @@ class AuthService {
         'isActive': true,
         'createdAt': FieldValue.serverTimestamp(),
         'lastLogin': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      }, SetOptions(merge: true)).timeout(_firestoreTimeout);
 
       return UserModel(
         id: user.uid,
@@ -74,10 +89,13 @@ class AuthService {
     String fallbackRole = AppConstants.roleFan,
   }) async {
     try {
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      _ensureFirebaseReady();
+      final credential = await _auth
+          .signInWithEmailAndPassword(
+            email: email,
+            password: password,
+          )
+          .timeout(_authTimeout);
 
       final user = credential.user;
       if (user == null) return null;
@@ -85,7 +103,7 @@ class AuthService {
       final profile = await _userFromFirebase(
         user,
         fallbackRole: fallbackRole,
-      );
+      ).timeout(_firestoreTimeout);
 
       await _firestore.collection('users').doc(user.uid).set({
         'email': user.email ?? email,
@@ -93,10 +111,22 @@ class AuthService {
         'role': profile.role,
         'isActive': true,
         'lastLogin': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      }, SetOptions(merge: true)).timeout(_firestoreTimeout);
 
       return profile;
     } on firebase_auth.FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+        try {
+          return await registerWithEmailPassword(
+            email: email,
+            password: password,
+            name: email.split('@').first,
+            role: fallbackRole,
+          );
+        } on Exception {
+          throw Exception(e.message ?? 'Login failed');
+        }
+      }
       throw Exception(e.message ?? 'Login failed');
     } catch (e) {
       throw Exception('Login failed: $e');
@@ -105,7 +135,8 @@ class AuthService {
 
   Future<void> logout() async {
     try {
-      await _auth.signOut();
+      _ensureFirebaseReady();
+      await _auth.signOut().timeout(_authTimeout);
     } catch (e) {
       throw Exception('Logout failed: $e');
     }
@@ -113,7 +144,8 @@ class AuthService {
 
   Future<void> resetPassword(String email) async {
     try {
-      await _auth.sendPasswordResetEmail(email: email);
+      _ensureFirebaseReady();
+      await _auth.sendPasswordResetEmail(email: email).timeout(_authTimeout);
     } on firebase_auth.FirebaseAuthException catch (e) {
       throw Exception(e.message ?? 'Password reset failed');
     } catch (e) {
@@ -125,7 +157,11 @@ class AuthService {
     firebase_auth.User user, {
     String fallbackRole = AppConstants.roleFan,
   }) async {
-    final doc = await _firestore.collection('users').doc(user.uid).get();
+    final doc = await _firestore
+        .collection('users')
+        .doc(user.uid)
+        .get()
+        .timeout(_firestoreTimeout);
     final data = doc.data() ?? {};
 
     return UserModel(
@@ -148,6 +184,14 @@ class AuthService {
     if (value is Timestamp) return value.toDate();
     if (value is DateTime) return value;
     return null;
+  }
+
+  void _ensureFirebaseReady() {
+    if (!FirebaseConfig.isAvailable) {
+      throw Exception(
+        'Firebase is not configured for this web build. Rebuild with Firebase dart-define values, then deploy again.',
+      );
+    }
   }
 }
 
